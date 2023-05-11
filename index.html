@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+   <head>
+		<title>HTML spacer Tag</title>
+		<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+		<script>
+			function showimg(){
+				console.log("上传成功！");
+				
+				// 获取上传图片
+				var upfile = document.getElementById('upimg').files[0];
+				console.log(upfile);
+				
+				// 获取图片url
+				var upfileurl = window.URL.createObjectURL(upfile);
+				console.log(upfileurl);
+				
+				document.getElementById('imgbg').innerHTML='<img src="'+upfileurl+'" alt="Smiley face">';
+				
+			}
+		</script>
+   </head>
+   <body>	  
+		<!-- div id="app">{{ message }}</div -->
+		
+		<input type="file" id="upimg" accept="image/*" onchange="showimg()"/>
+		
+		<div id="imgbg"></div>
+	  
+		<!-- script>
+		  const { createApp } = Vue
+		  
+		  createApp({
+			data() {
+			  return {
+				message: 'Hello Vue!'
+			  }
+			}
+		  }).mount('#app')
+		</script -->	  
+   </body>
+</html>
