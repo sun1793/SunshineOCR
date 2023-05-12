@@ -2,30 +2,270 @@
 <html>
    <head>
 		<title>HTML spacer Tag</title>
-		<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-		<script>
-			function showimg(){
-				console.log("上传成功！");
-				
+		<!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
+		<style>
+			<!-- body{ -->
+				<!-- margin:0px; -->
+			<!-- } -->
+
+		</style>
+		<script>	
+			// 定义数组，用于存储所有创建的矩形
+			var rects=[];
+			var lineWidth=4;
+			var existCount=0;
+			
+			class rect{
+				constructor(x,y,width,height,offsetX,offsetY,isSelect){
+					this.x = x;
+					this.y = y;
+					this.width = width;
+					this.height = height;
+					this.offsetX = offsetX;
+					this.offsetY = offsetY;					
+					this.isSelect = isSelect;
+				}					
+			};
+			
+			function drawRect(x,y,width,height){
+				// 将图片作为画布背景
+				var cRect=document.getElementById('newCanvas');					
+				if(cRect.getContext){			
+					var ctx_r=cRect.getContext('2d');
+					
+					// 矩形，填充颜色
+					<!-- ctx_r.fillStyle='green'; -->
+					<!-- ctx_r.fillRect(0, 0, 55, 50); -->			
+
+					// 矩形，仅边框
+					ctx_r.lineWidth = lineWidth;
+					ctx_r.strokeStyle = 'red';
+					<!-- strokeRect函数，不支持isPointInPath位置判定 -->
+					<!-- ctx_r.strokeRect(x,y,width,height); -->
+					<!-- stroke函数，支持isPointInPath位置判定 -->
+					ctx_r.rect(x,y,width,height);
+					ctx_r.stroke();
+				}
+			}
+		
+			function drawImg(){			
 				// 获取上传图片
 				var upfile = document.getElementById('upimg').files[0];
-				console.log(upfile);
+				<!-- console.log(upfile); -->
 				
-				// 获取图片url
-				var upfileurl = window.URL.createObjectURL(upfile);
-				console.log(upfileurl);
-				
-				document.getElementById('imgbg').innerHTML='<img src="'+upfileurl+'" alt="Smiley face">';
-				
+				// 仅图片文件大小小于等于8M时，正常加载
+				if(upfile.size<=1024*1024*8){
+					// 获取图片url
+					var upfileurl = window.URL.createObjectURL(upfile);
+					<!-- console.log(upfileurl); -->
+					
+					// document.getElementById('imgbg').innerHTML='<img src="'+upfileurl+'" alt="Smiley face">';
+
+					// 将图片作为画布背景
+					var cRect=document.getElementById('newCanvas');					
+					if(cRect.getContext){
+						var ctx_r=cRect.getContext('2d');
+						var c_img=new Image();
+						c_img.src=upfileurl;
+						c_img.onload=function(){
+							// 根据图片像素设置画布大小
+							document.getElementById('newCanvas').width=this.width;
+							document.getElementById('newCanvas').height=this.height;
+							ctx_r.drawImage(c_img,0,0);
+						}
+					}
+				}else{
+					alert("文件过大，请重新选择！");
+				}				
+			};
+			
+			function canvasRefresh(){
+			
 			}
-		</script>
+			
+			function createRect(){
+				// 创建矩形
+				drawRect(0,0,document.getElementById('rectWidth').value,document.getElementById('rectHeight').value);
+				
+				// 将矩形数组内是否已存在选中矩形，更新为false
+				for(var i=rects.length-1; i>=0; i--){
+					if(rects[i].isSelect){
+						rects[i].isSelect=false;
+					}
+				}
+				rects.push(new rect(0,0,document.getElementById('rectWidth').value,document.getElementById('rectHeight').value,false));
+				console.log("rect array count:"+rects.length);								
+			};
+		</script>			
    </head>
    <body>	  
 		<!-- div id="app">{{ message }}</div -->
 		
-		<input type="file" id="upimg" accept="image/*" onchange="showimg()"/>
+		<div>
+			<input type="file" id="upimg" accept="image/*" onchange="drawImg()"/>
+			宽：<input type="text" id="rectWidth" value="100">
+			高：<input type="text" id="rectHeight" value="50">
+			<input type="button" name="123" value="创建区域" onclick="createRect()"/>
+		</div>
 		
-		<div id="imgbg"></div>
+		<!-- <div id="imgbg"></div> -->
+		
+		<div>
+			<canvas id="newCanvas" width="450" height="300"></canvas>	
+		</div>
+		<script>
+			// 画布
+			var cRect= document.getElementById('newCanvas');
+			// 检查浏览器canvas支持
+			if (cRect.getContext){									
+				// 鼠标按下
+				cRect.onmousedown=function(e){
+					var cRect=document.getElementById('newCanvas');		
+					
+					if(cRect.getContext){
+						var ctx_r=cRect.getContext('2d');
+												
+						for(var i=rects.length-1; i>=0; i--) {
+							//判定当前点击位置是否在矩形框内
+							if(e.clientX-cRect.getBoundingClientRect().left>=rects[i].x
+							&&e.clientX-cRect.getBoundingClientRect().left<=rects[i].x+rects[i].width
+							&&e.clientY-cRect.getBoundingClientRect().top>=rects[i].y
+							&&e.clientY-cRect.getBoundingClientRect().top<=rects[i].y+rects[i].height){
+								// 增加判定， 如果存在一个矩形isSelect为true，则其他矩形不可再设置为true
+								rects[i].isSelect=true;
+								rects[i].offsetX=e.clientX-cRect.getBoundingClientRect().left-rects[i].x;
+								rects[i].offsetY=e.clientY-cRect.getBoundingClientRect().top-rects[i].y;
+								console.log(rects[i]);
+							}
+							else{
+								rects[i].isSelect=false;
+							}
+						}
+					}
+					
+					<!-- <!-- // 鼠标移动 --> -->
+					<!-- <!-- rectanglecanvas.onmousemove=function(e){ --> -->
+						<!-- <!-- // var rect=rectanglecontext.rectanglecontext(); --> -->
+					
+						<!-- <!-- rectanglecontext.clearRect(0,0,rectanglecanvas.width,rectanglecanvas.height); --> -->
+						<!-- <!-- rectanglecontext.fillRect(e.clientX,e.clientY,55,50); --> -->
+					<!-- <!-- };			 --> -->
+				};
+				
+				// 鼠标移动
+				cRect.onmousemove=function(e){
+					var cRect=document.getElementById('newCanvas');		
+					var selectCount=0;
+					
+					for(var i=rects.length-1; i>=0; i--) {
+						if(rects[i].isSelect){
+							selectCount++;
+						}
+					}
+					
+					console.log(selectCount);
+					
+					if(cRect.getContext){
+						var ctx_r=cRect.getContext('2d');		
+
+						// 重新绘制背景图
+						if(rects.length>0&&selectCount>0){
+							drawImg();						
+						}							
+						
+						// 重新绘制所有矩形
+						for(var i=rects.length-1; i>=0; i--) {	
+							// 选中矩形根据当前鼠标重新绘制
+							if(rects[i].isSelect){								
+								// 鼠标位置-画布标签距离网页左边的距离-鼠标在矩形内的起始相对偏移量
+								var rectX=e.clientX-cRect.getBoundingClientRect().left-rects[i].offsetX;
+								var rectY=e.clientY-cRect.getBoundingClientRect().top-rects[i].offsetY;
+								
+								// 修改rects数组中对应矩形x、y值
+								rects[i].x=rectX;
+								rects[i].y=rectY;								
+								
+								drawRect(rectX,rectY,rects[i].width,rects[i].height);	
+
+								console.log(rects[i]);								
+							}
+							// 未选中矩形，按照原位置重新绘制
+							else{
+								drawRect(rects[i].x,rects[i].y,rects[i].width,rects[i].height);
+							}
+						}
+						
+						// 判定当前点击位置是否在矩形框内
+						<!-- if(ctx_r.isPointInPath(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top)){ -->
+							// 重绘矩形
+							<!-- ctx_r.rect(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top,55,50); -->
+							<!-- ctx_r.stroke(); -->
+						<!-- } -->
+						<!-- console.log(document.body.scrollLeft); -->
+						<!-- console.log(document.body.scrollTops); -->
+					}
+				};
+								
+
+				
+				// 鼠标抬起
+				cRect.onmouseup = function(){
+					for(var i=rects.length-1; i>=0; i--) {
+						rects[i].isSelect=false;
+					}
+					
+					<!-- var cRect=document.getElementById('newCanvas');		 -->
+					
+					<!-- <!-- console.log(selectCount); --> -->
+					
+					<!-- if(cRect.getContext){ -->
+						<!-- var ctx_r=cRect.getContext('2d'); -->
+						
+						<!-- // 重新绘制背景图 -->
+						<!-- if(rects.length>0){ -->
+							<!-- drawImg();						 -->
+						<!-- }							 -->
+						<!-- // 重新绘制所有矩形 -->
+						<!-- for(var i=rects.length-1; i>=0; i--) {	 -->
+							<!-- // 未选中矩形，按照原位置重新绘制 -->
+							<!-- drawRect(rects[i].x,rects[i].y,rects[i].width,rects[i].height); -->
+						<!-- } -->
+						
+						<!-- // 判定当前点击位置是否在矩形框内 -->
+						<!-- <!-- if(ctx_r.isPointInPath(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top)){ --> -->
+							<!-- // 重绘矩形 -->
+							<!-- <!-- ctx_r.rect(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top,55,50); --> -->
+							<!-- <!-- ctx_r.stroke(); --> -->
+						<!-- <!-- } --> -->
+						<!-- <!-- console.log(document.body.scrollLeft); --> -->
+						<!-- <!-- console.log(document.body.scrollTops); --> -->
+					<!-- }					 -->
+					<!-- <!-- rectanglecanvas.onmousedown=null; --> -->
+					<!-- <!-- rectanglecanvas.onmousemove=null; --> -->
+				}
+			}			
+					
+			
+
+			<!-- var c = document.getElementById('newCanvas'); -->
+			<!-- var context = c.getContext('2d'); -->
+			<!-- var cX = 0; -->
+			<!-- var cY = 0; -->
+			<!-- var radius = 20; -->
+
+			<!-- context.save(); -->
+			<!-- context.translate(c.width / 2, c.height / 2); -->
+			<!-- context.scale(2, 1); -->
+			<!-- context.beginPath(); -->
+			<!-- context.arc(cX, cY, radius, 0, 2 * Math.PI, false); -->
+			<!-- context.restore(); -->
+			<!-- context.fillStyle = 'green'; -->
+			<!-- context.fill(); -->
+			<!-- context.lineWidth = 2; -->
+			<!-- context.strokeStyle = 'black'; -->
+			<!-- context.stroke(); 		 -->
+		</script>		
+		
 	  
 		<!-- script>
 		  const { createApp } = Vue
