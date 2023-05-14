@@ -27,6 +27,7 @@
 				}					
 			};
 			
+			// 绘制单个矩形
 			function drawRect(x,y,width,height){
 				// 将图片作为画布背景
 				var cRect=document.getElementById('newCanvas');					
@@ -48,6 +49,7 @@
 				}
 			}
 		
+			// 绘制画布背景
 			function drawImg(){			
 				// 获取上传图片
 				var upfile = document.getElementById('upimg').files[0];
@@ -79,10 +81,37 @@
 				}				
 			};
 			
-			function canvasRefresh(){
-			
+			// 绘制画布中所有矩形
+			function canvasRefresh(clientX,clientY){
+				var cRect=document.getElementById('newCanvas');		
+				if(cRect.getContext){
+					var ctx_r=cRect.getContext('2d');		
+
+					// 重新绘制所有矩形
+					for(var i=rects.length-1; i>=0; i--) {	
+						// 选中矩形根据当前鼠标重新绘制
+						if(rects[i].isSelect){								
+							// 鼠标位置-画布标签距离网页左边的距离-鼠标在矩形内的起始相对偏移量
+							var rectX=clientX-cRect.getBoundingClientRect().left-rects[i].offsetX;
+							var rectY=clientY-cRect.getBoundingClientRect().top-rects[i].offsetY;
+							
+							// 修改rects数组中对应矩形x、y值
+							rects[i].x=rectX;
+							rects[i].y=rectY;								
+							
+							drawRect(rectX,rectY,rects[i].width,rects[i].height);	
+
+							console.log(rects[i]);								
+						}
+						// 未选中矩形，按照原位置重新绘制
+						else{
+							drawRect(rects[i].x,rects[i].y,rects[i].width,rects[i].height);
+						}
+					}					
+				}
 			}
 			
+			// 默认位置创建单个矩形
 			function createRect(){
 				// 创建矩形
 				drawRect(0,0,document.getElementById('rectWidth').value,document.getElementById('rectHeight').value);
@@ -154,7 +183,6 @@
 				
 				// 鼠标移动
 				cRect.onmousemove=function(e){
-					var cRect=document.getElementById('newCanvas');		
 					var selectCount=0;
 					
 					for(var i=rects.length-1; i>=0; i--) {
@@ -163,85 +191,23 @@
 						}
 					}
 					
-					console.log(selectCount);
-					
-					if(cRect.getContext){
-						var ctx_r=cRect.getContext('2d');		
-
-						// 重新绘制背景图
-						if(rects.length>0&&selectCount>0){
-							drawImg();						
-						}							
-						
-						// 重新绘制所有矩形
-						for(var i=rects.length-1; i>=0; i--) {	
-							// 选中矩形根据当前鼠标重新绘制
-							if(rects[i].isSelect){								
-								// 鼠标位置-画布标签距离网页左边的距离-鼠标在矩形内的起始相对偏移量
-								var rectX=e.clientX-cRect.getBoundingClientRect().left-rects[i].offsetX;
-								var rectY=e.clientY-cRect.getBoundingClientRect().top-rects[i].offsetY;
-								
-								// 修改rects数组中对应矩形x、y值
-								rects[i].x=rectX;
-								rects[i].y=rectY;								
-								
-								drawRect(rectX,rectY,rects[i].width,rects[i].height);	
-
-								console.log(rects[i]);								
-							}
-							// 未选中矩形，按照原位置重新绘制
-							else{
-								drawRect(rects[i].x,rects[i].y,rects[i].width,rects[i].height);
-							}
-						}
-						
-						// 判定当前点击位置是否在矩形框内
-						<!-- if(ctx_r.isPointInPath(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top)){ -->
-							// 重绘矩形
-							<!-- ctx_r.rect(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top,55,50); -->
-							<!-- ctx_r.stroke(); -->
-						<!-- } -->
-						<!-- console.log(document.body.scrollLeft); -->
-						<!-- console.log(document.body.scrollTops); -->
-					}
+					// 重新绘制背景图
+					if(rects.length>0&&selectCount>0){
+						drawImg();						
+					}						
+										
+					// 重新绘制所有矩形
+					canvasRefresh(e.clientX,e.clientY);					
 				};
-								
-
-				
+												
 				// 鼠标抬起
 				cRect.onmouseup = function(){
 					for(var i=rects.length-1; i>=0; i--) {
 						rects[i].isSelect=false;
 					}
 					
-					<!-- var cRect=document.getElementById('newCanvas');		 -->
-					
-					<!-- <!-- console.log(selectCount); --> -->
-					
-					<!-- if(cRect.getContext){ -->
-						<!-- var ctx_r=cRect.getContext('2d'); -->
-						
-						<!-- // 重新绘制背景图 -->
-						<!-- if(rects.length>0){ -->
-							<!-- drawImg();						 -->
-						<!-- }							 -->
-						<!-- // 重新绘制所有矩形 -->
-						<!-- for(var i=rects.length-1; i>=0; i--) {	 -->
-							<!-- // 未选中矩形，按照原位置重新绘制 -->
-							<!-- drawRect(rects[i].x,rects[i].y,rects[i].width,rects[i].height); -->
-						<!-- } -->
-						
-						<!-- // 判定当前点击位置是否在矩形框内 -->
-						<!-- <!-- if(ctx_r.isPointInPath(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top)){ --> -->
-							<!-- // 重绘矩形 -->
-							<!-- <!-- ctx_r.rect(e.clientX-cRect.getBoundingClientRect().left,e.clientY-cRect.getBoundingClientRect().top,55,50); --> -->
-							<!-- <!-- ctx_r.stroke(); --> -->
-						<!-- <!-- } --> -->
-						<!-- <!-- console.log(document.body.scrollLeft); --> -->
-						<!-- <!-- console.log(document.body.scrollTops); --> -->
-					<!-- }					 -->
-					<!-- <!-- rectanglecanvas.onmousedown=null; --> -->
-					<!-- <!-- rectanglecanvas.onmousemove=null; --> -->
+					// 重新绘制所有矩形
+					canvasRefresh(0,0);					
 				}
 			}			
 					
