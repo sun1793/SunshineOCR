@@ -101,7 +101,7 @@
 							
 							drawRect(rectX,rectY,rects[i].width,rects[i].height);	
 
-							console.log(rects[i]);								
+							// console.log(rects[i]);								
 						}
 						// 未选中矩形，按照原位置重新绘制
 						else{
@@ -149,6 +149,7 @@
 			if (cRect.getContext){									
 				// 鼠标按下
 				cRect.onmousedown=function(e){
+					var selectCount=0;
 					var cRect=document.getElementById('newCanvas');		
 					
 					if(cRect.getContext){
@@ -160,11 +161,19 @@
 							&&e.clientX-cRect.getBoundingClientRect().left<=rects[i].x+rects[i].width
 							&&e.clientY-cRect.getBoundingClientRect().top>=rects[i].y
 							&&e.clientY-cRect.getBoundingClientRect().top<=rects[i].y+rects[i].height){
-								// 增加判定， 如果存在一个矩形isSelect为true，则其他矩形不可再设置为true
-								rects[i].isSelect=true;
-								rects[i].offsetX=e.clientX-cRect.getBoundingClientRect().left-rects[i].x;
-								rects[i].offsetY=e.clientY-cRect.getBoundingClientRect().top-rects[i].y;
-								console.log(rects[i]);
+								// 增加判定，如果存在一个矩形isSelect为true，则其他矩形不可再设置为true
+								for(var ii=rects.length-1; ii>=0; ii--) {
+									if(rects[ii].isSelect){
+										selectCount++;
+									}
+								}
+								
+								if(selectCount==0){
+									rects[i].isSelect=true;
+									rects[i].offsetX=e.clientX-cRect.getBoundingClientRect().left-rects[i].x;
+									rects[i].offsetY=e.clientY-cRect.getBoundingClientRect().top-rects[i].y;
+									console.log(rects[i]);
+								}								
 							}
 							else{
 								rects[i].isSelect=false;
@@ -197,7 +206,7 @@
 					}						
 										
 					// 重新绘制所有矩形
-					canvasRefresh(e.clientX,e.clientY);					
+					canvasRefresh(e.clientX,e.clientY);						
 				};
 												
 				// 鼠标抬起
@@ -207,7 +216,7 @@
 					}
 					
 					// 重新绘制所有矩形
-					canvasRefresh(0,0);					
+					canvasRefresh(0,0);							
 				}
 			}			
 					
